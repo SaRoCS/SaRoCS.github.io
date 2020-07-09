@@ -1,0 +1,28 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    History
+{% endblock %}
+
+{% block main %}
+    <h2 id='g_title'>{{ group }}</h2>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Member</th>
+                <th>Cash</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in members %}
+                <tr>
+                    <td>{{ row['member'] }}</td>
+                    <td>{{ row['cash'] }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <form action="/group" method='post'>
+        <button class="btn btn-primary" type="submit">Leave</button>
+    </form>
+{% endblock %}
