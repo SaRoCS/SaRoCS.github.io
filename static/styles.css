@@ -56,6 +56,10 @@ main tfoot
     /* boldface tables' footers */
     font-weight: bold;
 }
+footer
+{
+    margin-bottom:25px;
+}
 #g_reg
 {
     padding-top:20px;
@@ -75,4 +79,16 @@ main tfoot
 #g_title
 {
     padding-bottom:20px;
+}
+.next
+{
+    margin-top:50px;
+}
+#logout
+{
+    margin-top:50px;
+}
+#info
+{
+    padding-bottom:25px;
 }

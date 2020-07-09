@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    History
+    Class
 {% endblock %}
 
 {% block main %}
@@ -10,13 +10,17 @@
         <thead>
             <tr>
                 <th>Member</th>
-                <th>Cash</th>
+                <th>Total</th>
             </tr>
         </thead>
         <tbody>
             {% for row in members %}
                 <tr>
-                    <td>{{ row['member'] }}</td>
+                    {% if role == "teacher" %}
+                        <td><a href=/student/?student={{ row['member'] }}>{{ row['member'] }}</a></td>
+                    {% else %}
+                        <td>{{ row['member'] }}</td>
+                    {% endif %}
                     <td>{{ row['cash'] }}</td>
                 </tr>
             {% endfor %}

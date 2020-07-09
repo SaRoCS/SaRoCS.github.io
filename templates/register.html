@@ -15,6 +15,23 @@
         <div class="form-group">
             <input class="form-control" name="confirmation" placeholder=" Confirm Password" type="password" required>
         </div>
+        <div class="form-group">
+            <input  name="role" id="student"  type="checkbox" value='student' required>
+            <label for='student'>Student</label><br>
+            <input  name="role" id="teacher"  type="checkbox" value="teacher" required>
+            <label for='teacher'>Teacher</label><br>
+        </div>
+
         <button class="btn btn-primary" type="submit">Register</button>
     </form>
+{% endblock %}
+<!--https://stackoverflow.com/questions/24403817/html5-required-attribute-one-of-two-fields-->
+{% block script %}
+    jQuery(function ($) {
+        var $inputs = $('input[name=role],input[name=role]');
+        $inputs.on('input', function () {
+            // Set the required property of the other input to false if this input is not empty.
+            $inputs.not(this).prop('required', !$(this).val().length);
+        });
+    });
 {% endblock %}

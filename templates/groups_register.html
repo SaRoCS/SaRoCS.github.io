@@ -1,13 +1,13 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    Group Register
+    Class Register
 {% endblock %}
 
 {% block main %}
     <form action="/groups_register" method="post">
         <div class="form-group">
-            <input autocomplete="off" autofocus class="form-control" name="group_name" placeholder="Group name" type="text" required>
+            <input autocomplete="off" autofocus class="form-control" name="group_name" placeholder="Class name" type="text" required>
         </div>
         <div id="id">
             Your group ID is {{ key }}

@@ -1,21 +1,23 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    Group Login
+    Class Login
 {% endblock %}
 
 {% block main %}
     <div id="t_reg">
-        Enter a group key to join a group
+        Enter a class key to join a group
     </div>
     <form action="/groups_login" method='post'>
         <div class="form-group">
-            <input class="form-control" name="key" placeholder="Group key" type="text" required>
+            <input class="form-control" name="key" placeholder="Class key" type="text" autocomplete="off" required>
         </div>
         <button class="btn btn-primary" type="submit">Enter</button>
     </form>
-    <div id="g_reg">
-        or
-        <a href='/groups_register'>Register for a new group</a>
-    </div>
+    {% if role == "teacher" %}
+        <div id="g_reg">
+            or
+            <a href='/groups_register'>Register for a new class</a>
+        </div>
+    {% endif %}
 {% endblock %}

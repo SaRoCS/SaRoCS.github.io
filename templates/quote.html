@@ -5,10 +5,38 @@
 {% endblock %}
 
 {% block main %}
-    <form action="/quote" method="post">
+    <form action="/quote" method="post" autocomplete="off">
         <div class="form-group">
-            <input class="form-control" name="symbol" placeholder="Symbol" type="text" required>
+            <input  name='symbol' list="datalist" class="form-control" placeholder="Symbol or Name" id="livebox" required>
+            <datalist id = "datalist"></datalist>
         </div>
         <button class="btn btn-primary" type="submit">Quote</button>
-    </form>
+{% endblock %}
+<!--https://github.com/ahmetbcakici/LiveSearchINFlask-->
+{% block script %}
+     $(document).ready(function(){
+        $("#livebox").on("input",function(e){
+            var valueT = $("form").serializeArray();
+            valueT = valueT[0]["value"];
+            console.log(valueT);
+            var emptyT = "";
+            if( valueT.localeCompare(emptyT)=== 0){
+                $("#datalist").empty();
+            }else{
+                $("#datalist").empty();
+                $.ajax({
+                    method:"post",
+                    url:"/livesearch",
+                    data:{text:$("#livebox").val()},
+                    success:function(res){
+                        var data = " ";
+                        $.each(res,function(index,value){
+                            data += value;
+                        });
+                        $("#datalist").html(data);
+                    }
+                });
+            }
+        });
+    });
 {% endblock %}

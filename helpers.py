@@ -47,6 +47,7 @@ def lookup(symbol):
         response.raise_for_status()
     except requests.RequestException:
         return None
+
     # Parse response
     try:
         quote = response.json()

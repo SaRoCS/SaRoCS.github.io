@@ -1,5 +1,9 @@
 import os
 import uuid
+import pandas as pd
+import plotly.graph_objects as go
+import plotly.express as px
+from alpha_vantage.timeseries import TimeSeries
 
 from cs50 import SQL
 from flask import Flask, flash, jsonify, redirect, render_template, request, session
@@ -14,7 +18,7 @@ from helpers import apology, login_required, lookup, usd
 app = Flask(__name__)
 
 # Ensure templates are auto-reloaded
-app.config["TEMPLATES_AUTO_RELOAD"] = False
+app.config["TEMPLATES_AUTO_RELOAD"] = True
 
 # Ensure responses aren't cached
 @app.after_request
@@ -35,8 +39,9 @@ Session(app)
 
 # Configure CS50 Library to use SQLite database
 db = SQL("sqlite:///finance.db")
+dbs = SQL("sqlite:///symbols.db")
 
-# Make sure API key is set
+
 
 @app.route("/")
 @login_required
@@ -58,6 +63,7 @@ def index():
 
         total = row["price"]
         total = total[1:len(total)]
+        total = total.replace(",", "")
         total = float(total) * row['shares']
 
 
@@ -75,7 +81,13 @@ def buy():
     """Buy shares of stock"""
     if request.method == "POST":
         #get input
-        symbol = request.form.get("symbol")
+        symbolR = request.form.get("symbol")
+        symbol = ""
+        for i in symbolR:
+            if i == ":":
+                break
+            else:
+                symbol += i
         shares = request.form.get("shares")
 
         #error check
@@ -118,8 +130,6 @@ def buy():
         db.execute("UPDATE users SET cash=:cash WHERE id=:user", cash=cash, user=session['user_id'])
 
         return redirect("/")
-
-
     else:
         return render_template("buy.html")
 
@@ -155,7 +165,7 @@ def login():
 
         # Ensure username exists and password is correct
         if len(rows) != 1 or not check_password_hash(rows[0]["hash"], request.form.get("password")):
-            return apology("invalid username and/or password", 403)
+            return apology("invalid username and or password", 403)
 
         # Remember which user has logged in
         session["user_id"] = rows[0]["id"]
@@ -184,18 +194,95 @@ def logout():
 def quote():
     """Get stock quote."""
     if request.method == "POST":
-        symbol = request.form.get("symbol")
+        symbolR = request.form.get("symbol")
+        symbol = ""
+        for i in symbolR:
+            if i == ":":
+                break
+            else:
+                symbol += i
         quote = lookup(symbol)
         if not quote:
             return apology("Invalid symbol")
+        key = 'T8H0HRQCP04MRFAW'
+        ts = TimeSeries(key)
+        data, meta = ts.get_daily(symbol=symbol, outputsize="full")
+        keys = data.keys()
+        times = []
+        for key in keys:
+            times.append(key)
+        closes = []
+        for i in range(len(times)):
+            closes.append(data[times[i]]['4. close'])
 
+        df = pd.read_json(f"https://cloud.iexapis.com/stable/stock/{symbol}/batch?types=intraday-prices&token=pk_c004bf4436fd412cafbb3e87e86403b1")
+
+        high = 0.00
+        date = df['intraday-prices'][0]['date']
+        low = df['intraday-prices'][0]['low']
+        openS = df['intraday-prices'][0]['open']
+        if len(df['intraday-prices']) == 390:
+            close = df['intraday-prices'][len(df['intraday-prices'])-1]['close']
+        else:
+            close = None
+        for i in range(len(df['intraday-prices'])):
+            #high
+            if df['intraday-prices'][i]['high'] != None:
+                if df['intraday-prices'][i]['high'] > high:
+                    high = df['intraday-prices'][i]['high']
+            #low
+            if df['intraday-prices'][i]['low'] != None:
+                if df['intraday-prices'][i]['low'] < low:
+                    low = df['intraday-prices'][i]['low']
+
+        name = quote["name"]
+        symbol = quote["symbol"]
+        fig = px.line(x=times, y=closes, title=f'{name} ({symbol}) Closing Prices' )
+
+        fig.update_xaxes(
+            rangeslider_visible=False,
+            rangeselector=dict(
+               buttons=list([
+                    dict(count=7, label="1w", step="day", stepmode="backward"),
+                    dict(count=1, label="1m", step="month", stepmode="backward"),
+                    dict(count=3, label="3m", step="month", stepmode="backward"),
+                    dict(count=6, label="6m", step="month", stepmode="backward"),
+                    dict(count=1, label="YTD", step="year", stepmode="todate"),
+                    dict(count=1, label="1y", step="year", stepmode="backward"),
+                    dict(step="all")
+                ])
+            )
+        )
+
+        fig.write_html("templates/plot.html", include_plotlyjs="cdn", full_html=False)
+        page = open("templates/plot.html")
+        data = page.read()
+        page.close()
+        #print(data)
         name = quote["name"]
         symbol = quote["symbol"]
         price = quote["price"]
         price = usd(price)
-        return render_template("quoted.html", name=name, symbol=symbol, price=price)
+        return render_template("quoted.html", name=name, symbol=symbol, price=price, high=high, low=low, openS=openS, close=close, data=data, date=date)
     else:
         return render_template("quote.html")
+
+
+@app.route("/livesearch",methods=["POST","GET"])
+def livesearch():
+    searchbox = request.form.get("text")
+    rows = dbs.execute("SELECT * FROM symbols WHERE name LIKE '{}%' LIMIT 10".format(searchbox))
+    result = []
+    for row in rows:
+        symbol = row['symbol']
+        name = row['name']
+        temp = "<option value='"
+        temp += symbol + ": " + name
+        temp += "'>"
+
+        result.append(temp)
+
+    return jsonify(result)
 
 
 @app.route("/register", methods=["GET", "POST"])
@@ -206,6 +293,8 @@ def register():
         username = request.form.get("username")
         password = request.form.get("password")
         confirmation = request.form.get("confirmation")
+        role = request.form.getlist("role")
+        role = role[0]
 
         #check for blanks and passwords match
         if not username:
@@ -225,7 +314,7 @@ def register():
             return apology("Username already exists")
 
         #enter username and password hash
-        db.execute("INSERT INTO users (username, hash) VALUES (:username, :password)", username=username, password=pass_hash)
+        db.execute("INSERT INTO users (username, hash, role) VALUES (:username, :password, :role)", username=username, password=pass_hash, role=role)
         db.execute("CREATE TABLE :username (symbol VARCHAR(255), shares INTEGER NOT NULL, name VARCHAR(255))", username=username)
 
         return redirect("/")
@@ -304,10 +393,12 @@ def groups_login():
         #get group
         group = db.execute("SELECT group_key FROM users WHERE id=:user", user=session['user_id'])
         group = group[0]["group_key"]
+        role = db.execute("SELECT role FROM users WHERE id=:user", user=session['user_id'])
+        role = role[0]['role']
         #check group
         #if no group
         if not group:
-            return render_template("groups_login.html")
+            return render_template("groups_login.html", role=role)
         else:
             return redirect("/group")
 
@@ -329,10 +420,13 @@ def groups_register():
         return render_template("groups_register.html", key=key)
     else:
         name = request.form.get("group_name")
-        name = name + " Group"
+        name = name + " Class"
+        row = db.execute("SELECT name FROM group_keys WHERE name=:name", name=name)
+        if len(row) != 0:
+            return apology("Class already exists")
         key = request.form.get("key")
         #create group
-        db.execute("INSERT INTO group_keys (key, name) VALUES (:key, :name)", key=key, name=name)
+        db.execute("INSERT INTO group_keys (key, name, admin) VALUES (:key, :name, :user)", key=key, name=name, user=session['user_id'])
         db.execute("CREATE TABLE :name (member VARCHAR(255), user_id INTEGER NOT NULL, FOREIGN KEY (user_id) REFERENCES users(id))", name=name)
         return redirect("/groups_login")
 
@@ -347,12 +441,38 @@ def group():
         group = db.execute("SELECT name FROM group_keys WHERE key=:key", key=group_key)
         group = group[0]['name']
         #get members
+
         members = db.execute("SELECT * FROM :group JOIN users ON :group.user_id= users.id ORDER BY cash DESC", group=group)
-        for row in members:
-            cash = row['cash']
+        for cow in members:
+            username = cow['member']
+            rows = db.execute("SELECT * FROM :username", username=username)
+            cashD = db.execute("SELECT cash FROM users WHERE username=:username", username=username)
+            cash = cashD[0]['cash']
+            totals = cash
             cash = usd(cash)
-            row['cash'] = cash
-        return render_template("group.html", group=group, members=members)
+            for row in rows:
+                price = lookup(row["symbol"])
+                price = price["price"]
+                price = usd(price)
+                row["price"] = price
+
+                total = row["price"]
+                total = total[1:len(total)]
+                total = total.replace(",", "")
+                total = float(total) * row['shares']
+
+
+                totals += total
+
+                total = usd(total)
+                row['total'] = total
+            totals = usd(totals)
+            cow['cash'] = totals
+        members.sort(key=lambda x: x.get('cash'), reverse=True)
+        role = db.execute("SELECT role FROM users WHERE id=:user", user=session['user_id'])
+        role = role[0]['role']
+
+        return render_template("group.html", group=group, members=members, role=role)
     else:
         #get users group
         group = db.execute("SELECT group_key FROM users WHERE id=:id", id=session['user_id'])
@@ -365,6 +485,84 @@ def group():
         return redirect("/groups_login")
 
 
+@app.route("/profile", methods=["GET", "POST"])
+@login_required
+def profile():
+    if request.method == "POST":
+        password = request.form.get("password")
+        confirm = request.form.get('confirm_password')
+        cash = request.form.get("add_cash")
+        if not cash:
+            #change password
+            if password == confirm:
+                pass_hash = generate_password_hash(password)
+                db.execute("UPDATE users SET hash=:hash WHERE id=:id", hash=pass_hash, id=session['user_id'])
+            else:
+                return apology("Passwords do not match")
+        else:
+            #add cash
+            cash = cash[1:len(cash)]
+            cashR = ""
+            for i in cash:
+                if i == ",":
+                    cash = cash
+                else:
+                    cashR += i
+            cash = int(cashR)
+            db.execute("UPDATE users SET cash=cash+:cash WHERE id=:id", cash=cash, id=session['user_id'])
+
+
+        return redirect("/")
+    else:
+        username = db.execute("SELECT username FROM users WHERE id=:id", id=session["user_id"])
+        username = username[0]['username']
+
+        group_key = db.execute("SELECT group_key FROM users WHERE id=:id", id=session["user_id"])
+        group_key = group_key[0]['group_key']
+
+        role = db.execute("SELECT role FROM users WHERE id=:user", user=session['user_id'])
+        role = role[0]['role']
+
+        row = db.execute("SELECT name FROM group_keys WHERE key=:key", key=group_key)
+        if not row:
+            group = None
+        else:
+            group = row[0]['name']
+
+        return render_template("profile.html", username=username, group_key=group_key, group=group, role=role)
+
+
+@app.route("/student/", methods=["GET", "POST"])
+@login_required
+def student():
+    username = request.args.get("student", default='', type=str)
+
+    rows = db.execute("SELECT * FROM :username", username=username)
+    cashD = db.execute("SELECT cash FROM users WHERE username=:username", username=username)
+    cash = cashD[0]['cash']
+    totals = cash
+    cash = usd(cash)
+    for row in rows:
+        price = lookup(row["symbol"])
+        price = price["price"]
+        price = usd(price)
+        row["price"] = price
+
+        total = row["price"]
+        total = total[1:len(total)]
+        total = float(total) * row['shares']
+
+
+        totals += total
+
+        total = usd(total)
+        row['total'] = total
+    totals = usd(totals)
+    return render_template("index.html", cash=cash, rows=rows, totals=totals)
+
+@app.route("/plot",methods=["POST","GET"])
+def plot():
+    return render_template("plot.html")
 
 
 def errorhandler(e):
