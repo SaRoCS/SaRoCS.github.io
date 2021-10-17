@@ -78,33 +78,25 @@ document.addEventListener("DOMContentLoaded", () => {
     };
     function getHTML(url, callback) {
 
-        //feature detection
-        if (!window.XMLHttpRequest) return;
-        //create new request
-        let xhr = new XMLHttpRequest();
-
-        //setup callback
-        xhr.onload = function () {
-            if (callback && typeof (callback) === 'function') {
-                callback(this.responseXML);
-            }
-        }
-
-        //get the HTML
-        xhr.open('GET', url);
-        xhr.responseType = 'document';
-        xhr.send();
-        
+        fetch(url)
+        .then(response => response.json())
+        .then(graph => {
+            var temp = document.createElement('div');
+            temp.innerHTML = graph;
+            var htmlObject = temp.firstChild;
+            callback(htmlObject);
+        });
 
     };
     function appendGraph(response) {
-        let graphD = response.querySelector("div");
+        
+        let graphD = response;
         graph.innerHTML = '';
         graph.appendChild(graphD);
         let scripts = graph.querySelectorAll('script').forEach((script) => {
             eval(script.text);
         })
-            
+        
     }
 
     //popovers

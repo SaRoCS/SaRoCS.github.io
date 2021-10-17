@@ -570,9 +570,4 @@ def graph(request, symbol):
     )
     fig['data'][0]['line']['color']= "lightgray"
     
-    #write the html
-    fig.write_html("stocks/templates/stocks/plot.html", include_plotlyjs = False, full_html=False)
-    
-    
-    return render(request, "stocks/plot.html")
-    
+    return JsonResponse(plotly.io.to_html(fig, include_plotlyjs = False, full_html=False), safe=False)
