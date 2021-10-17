@@ -1,0 +1,13 @@
+{% extends 'stocks/layout.html' %}
+
+{% block body %}
+    <div class='form'>
+        <form action='{% url "sell" %}' method="POST">
+            {% csrf_token %}
+            {% for field in form %}
+                {{field}}<br>
+            {% endfor %}
+            <input type="submit" class='btn btn-primary' value='Sell'>
+        </form>
+    </div>
+{% endblock %}

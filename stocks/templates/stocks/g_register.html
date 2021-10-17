@@ -1,0 +1,16 @@
+{% extends "stocks/layout.html" %}
+
+
+{% block body %}
+    {% if message %}
+        {{ message }}
+    {% endif %}
+    <form action="{% url 'group_register' %}" method="post">
+        {% csrf_token %}
+        {{ form }}
+        <div id="id">
+            Your class key is: <b>{{ id }}</b>
+        </div>
+        <input class="btn btn-primary" type="submit"value='Register'>
+    </form>
+{% endblock %}
