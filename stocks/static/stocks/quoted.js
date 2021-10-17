@@ -78,7 +78,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
     function getHTML(url, callback) {
 
-      /*  //feature detection
+        //feature detection
         if (!window.XMLHttpRequest) return;
         //create new request
         let xhr = new XMLHttpRequest();
@@ -93,31 +93,18 @@ document.addEventListener("DOMContentLoaded", () => {
         //get the HTML
         xhr.open('GET', url);
         xhr.responseType = 'document';
-        xhr.send();*/
-        fetch(url)
-        .then(response => response.json())
-        .then(graph => {
-            var temp = document.createElement('div');
-            temp.innerHTML = graph;
-            var htmlObject = temp.firstChild;
-            callback(htmlObject);
-        });
+        xhr.send();
+        
 
     };
     function appendGraph(response) {
-        /*let graphD = response.querySelector("div");
-        graph.innerHTML = '';
-        graph.appendChild(graphD);
-        let scripts = graph.querySelectorAll('script').forEach((script) => {
-            eval(script.text);
-        })*/
-        let graphD = response;
+        let graphD = response.querySelector("div");
         graph.innerHTML = '';
         graph.appendChild(graphD);
         let scripts = graph.querySelectorAll('script').forEach((script) => {
             eval(script.text);
         })
-        
+            
     }
 
     //popovers
