@@ -1,0 +1,58 @@
+{% extends "stocks/layout.html" %}
+{% load static %}
+
+{% block script %}
+    <script src='{% static "stocks/quoted.js" %}'></script>
+{% endblock %}
+
+
+{% block body %}
+    <div id='title'>
+        <h4>A share of {{ quote.name }} ({{ quote.symbol }}) costs {{ price }}.</h4>
+    </div>
+    <div class='grid-container'>
+        <div id='info'>
+            <h5>{{ date }}'s Stats</h5>
+            <div class='left'>
+                <a href="javascript:void(0)"  data-toggle="popover" tabindex="0" data-trigger="focus" data-placement="top" title="Open" data-content="The price at the beginning of the day.">Open:</a> ${{ openS }}<br>
+                <a href="javascript:void(0)"  data-toggle="popover" tabindex="0" data-trigger="focus" data-placement="top" title="Close" data-content="The price at the end of the day.">Close:</a>
+                {% if close == None %}
+                    $---.--
+                {% else %}
+                    ${{ close }}
+                {% endif %}<br>
+                <a href="javascript:void(0)"  data-toggle="popover" tabindex="0" data-trigger="focus" data-placement="top" title="High" data-content="The highest price of the day so far.">High:</a> ${{ high }}<br>
+                <a href="javascript:void(0)"  data-toggle="popover" tabindex="0" data-trigger="focus" data-placement="top" title="Low" data-content="The lowestest price of the day so far.">Low:</a> ${{ low }}<br>
+                <a href="javascript:void(0)"  data-toggle="popover" tabindex="0" data-trigger="focus" data-placement="top" title="Average Volume" data-content="The average number of shares traded over a 30 day period.">Avg. Volume:</a> {{ quote.avgVolume }}<br>
+                <a href="javascript:void(0)"  data-toggle="popover" tabindex="0" data-trigger="focus" data-placement="top" title="1 Year Beta" data-content="Beta is a measure of a stocks volitility in relation to the market. 
+                If a stock moves less than the market, the stock's beta is less than 1.0. High-beta stocks are supposed to be riskier but provide higher return potential; low-beta stocks pose less risk but also lower returns.">Beta (1 year):</a> {{ quote.beta }}<br>
+            </div>
+            <div class='right'>
+                <a href="javascript:void(0)"  data-toggle="popover" tabindex="0" data-trigger="focus" data-placement="top" title="PE Ratio" data-content="The price-earnings ratio is the ratio of a company's share price to the company's earnings per share. 
+                The ratio is used for valuing companies and to find out whether they are overvalued or undervalued.">PE Ratio:</a> {{ quote.pe_ratio }}<br>
+                <a href="javascript:void(0)"  data-toggle="popover" tabindex="0" data-trigger="focus" data-placement="top" title="Market Cap" data-content="The total value of all of a company's shares of stock.">Market Cap:</a> {{ quote.mktCap }}<br>
+                <a href="javascript:void(0)"  data-toggle="popover" tabindex="0" data-trigger="focus" data-placement="top" title="52 Week High" data-content="The highest price of the 52 week year.">52 Week High:</a> ${{ quote.week52H }}<br>
+                <a href="javascript:void(0)"  data-toggle="popover" tabindex="0" data-trigger="focus" data-placement="top" title="52 Week Low" data-content="The lowest price of the 52 week year.">52 Week Low:</a> ${{ quote.week52L }}<br>
+                <a href="javascript:void(0)"  data-toggle="popover" tabindex="0" data-trigger="focus" data-placement="top" title="Dividend Yield" data-content="The dividend yield is the amount of money a company pays shareholders for owning a share of its stock divided by its current stock price.">Yield:</a> {{ quote.yield }}%<br>
+                <a href="javascript:void(0)"  data-toggle="popover" tabindex="0" data-trigger="focus" data-placement="top" title="Earnings per Share" data-content="EPS is calculated as a company's profit divided by the outstanding shares of its common stock. The resulting number serves as an indicator of a company's profitability. 
+                The higher a company's EPS, the more profitable it is considered to be.">EPS:</a> {{ quote.eps }}<br>
+            </div>
+            <div>
+                
+            </div>
+        </div>
+        
+        <div id="graph">
+            <div  style="width: 3rem; height: 3rem;" class="spinner-grow m-5" role="status"></div>
+        </div>
+
+        <div id='news'>
+            <div id="carouselExampleControls" class="carousel slide" data-ride="carousel">
+                <div class="carousel-inner">
+                </div>
+            </div>
+        </div>
+        <div id="news-data" hidden>{{ news }}</div>
+        
+    </div>
+{% endblock %}

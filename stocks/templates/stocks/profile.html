@@ -1,0 +1,47 @@
+{% extends "stocks/layout.html" %}
+
+
+{% block body %}
+    <div class='profile'>
+        <b>Username:</b> {{ request.user.username }} <br>
+        {% if group == None %}
+           <b>Class name:</b> You are not in a group <br>
+           {% if request.user.teacher %}
+                <b>Class key:</b> You are not in a group <br>
+            {% endif %}
+        {% else %}
+            <b>Class name:</b> {{ group.name }} <br>
+            {% if request.user.teacher %}
+                <b>Class key:</b> {{ group.class_id }} <br>
+            {% endif %}
+        {% endif %}
+
+    </div>
+    <div class='profile'>
+        <h3>Change Password</h3>
+        {% if message %}
+            <b>{{ message }}</b>
+        {% endif %}
+        <form action="{% url 'profile' %}" method="post">
+            {% csrf_token %}
+            {% for field in form1 %}
+                {{ field }}<br>
+            {% endfor %}
+            <input class="btn btn-primary" type="submit" name="change" value='Change'>
+        </form>
+    </div>
+    {% if request.user.teacher %}
+        <div class='profile'>
+            <h3>Add Cash</h3>
+            <form action="{% url 'profile' %}" method="post">
+                {% csrf_token %}
+                {{ form2 }}<br>
+                <input class="btn btn-primary" type="submit" name="add" value="Add">
+            </form>
+        </div>
+    {% endif %}
+    <div class='profile'>
+        <a href="{% url 'logout' %}">Logout</a>
+    </div>
+
+{% endblock %}

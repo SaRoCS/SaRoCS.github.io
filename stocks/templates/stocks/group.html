@@ -1,0 +1,54 @@
+{% extends "stocks/layout.html" %}
+
+{% block script %}
+    <script>
+
+        document.addEventListener("DOMContentLoaded", function() {
+            document.querySelector("#leave").addEventListener("click", () => {
+                const name = document.querySelector("#g_title").innerHTML;
+                const user = document.querySelector("#name").innerHTML;
+                fetch(`/leave?name=${name}&user=${user}`)
+                .then(res => {
+                    location.reload();
+                    return false;
+                });
+                
+            });
+        });
+
+    </script>
+{% endblock %}
+
+{% block body %}
+    <h2 id='g_title'>{{ group.name }}</h2>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Member</th>
+                <th>Total</th>
+                {% if request.user.teacher %}
+                    <th>History</th>
+                    <th>Remove</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for member in members %}
+                <tr>
+                    {% if request.user.teacher %}
+                        <td><a href="/?user={{ member.name }}">{{ member.name }}</a></td>
+                    {% else %}
+                        <td>{{ member.name }}</td>
+                    {% endif %}
+                    <td>{{ member.total }}</td>
+                    {% if request.user.teacher %}
+                        <td><a href='/history?user={{ member.name }}'>History</a> </td>
+                        <td><a href='/leave?name={{ group.name }}&user={{ member.name }}'>Remove</a> </td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div id='name' hidden=true>{{ request.user.username }}</div>
+    <button class="btn btn-primary" id='leave'>Leave</button>
+{% endblock %}

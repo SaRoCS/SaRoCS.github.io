@@ -1,0 +1,22 @@
+{% extends "stocks/layout.html" %}
+
+
+{% block body %}
+    <div id="t_reg">
+        Enter a class key to join a group<br>
+        {% if message %}
+            <b>{{ message }}</b>
+        {% endif %}
+    </div>
+    <form action="{% url 'groups' %}" method='post'>
+        {% csrf_token %}
+        {{ form }}<br>
+        <input class="btn btn-primary" id="group_enter" value='Enter' type="submit">
+    </form>
+    {% if request.user.teacher %}
+        <div>
+            or
+            <a href='{% url "group_register" %}'>Register for a new class</a>
+        </div>
+    {% endif %}
+{% endblock %}

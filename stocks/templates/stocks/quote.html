@@ -1,0 +1,19 @@
+{% extends "stocks/layout.html" %}
+{% load static %}
+
+
+{% block script %}
+    <script src="{% static 'stocks/live.js' %}"></script>
+    
+{% endblock %}
+
+{% block body %}
+    <h3>{{ msg }}</h3>
+    <form action='/quote' method="POST">
+        {% csrf_token %}
+        {{form}}<br>
+        <datalist id='options'></datalist>
+        <input type="submit" class='btn btn-primary'>
+    </form>
+    <div id='api-key' hidden>{{ key }}</div>
+{% endblock %}

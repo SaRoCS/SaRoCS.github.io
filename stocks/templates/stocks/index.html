@@ -1,0 +1,52 @@
+{% extends 'stocks/layout.html' %}
+
+{% block body %}
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Symbol</th>
+                <th>Name</th>
+                <th>Shares</th>
+                <th>Price</th>
+                <th>TOTAL</th>
+            </tr>
+        </thead>
+        <tfoot>
+            <tr>
+                <td colspan="4"></td>
+                <td>{{ totals }}</td>
+            </tr>
+        </tfoot>
+        <tbody>
+            <tr>
+                <td colspan="4">CASH</td>
+                <td>{{ cash }}</td>
+            </tr>
+            {% for stock in s %}
+                <tr>
+                    <td>{{ stock.symbol }}</td>
+                    <td><a data-toggle="collapse" href="#collapseExample{{ stock.symbol }}" role="button" aria-expanded="false" aria-controls="collapseExample">
+                        {{ stock.name }}
+                      </a>
+                    </td>
+                    <td>{{ stock.amount }}</td>
+                    <td>{{ stock.price }}</td>
+                    <td>{{ stock.total }}</td>
+                    
+                </tr>
+                <div class="collapse" id="collapseExample{{ stock.symbol }}">
+                    <div class="card card-body">
+                        <h4>{{ stock.exchange }}</h4>
+                        {% if stock.point > 0 %}
+                            <p class='green large'><b>{{ stock.point }}%</b></span></p>
+                        {% else %}
+                            <p class='red large'><b>{{ stock.point }}%</b></span></p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+            {% endfor %}
+        </tbody>
+    </table>
+    
+{% endblock %}
