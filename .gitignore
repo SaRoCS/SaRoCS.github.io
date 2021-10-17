@@ -1,4 +1,4 @@
 db.sqlite3
-stocks\__pycache__\
-stocks\migrations\
-Final_Project\__pycache__\
+stocks/__pycache__/
+stocks/migrations/
+Final_Project/__pycache__/
