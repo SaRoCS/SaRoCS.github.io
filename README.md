@@ -12,7 +12,7 @@ The Final_Project directory contains the Django project for Stock Education. The
 
 *****
 
-In order to run Stock Education you must first get an [IEX Cloud api key](https://iexcloud.io/), an [Alpha Vantage api key](https://www.alphavantage.co/), and a [Financial Modeling Prep api key](https://financialmodelingprep.com/developer). The set these as environment variables `IEX_KEY`, `ALPHA_KEY`, and `FMP_KEY` respectively. Next install all the required packages, make and apply migrations, and run the server. Once the server is set up, you can use Stock Education the way a regular user would. If you want to use all the features of Stock Education, select “teacher” when creating an account. Once this is done, you are set up and ready to test out the virtual stock market.
+In order to run Stock Education you must first get an [IEX Cloud api key](https://iexcloud.io/), and an [Alpha Vantage api key](https://www.alphavantage.co/). The set these as environment variables `IEX_KEY` and `ALPHA_KEY`,  respectively. Next install all the required packages, make and apply migrations, and run the server. Once the server is set up, you can use Stock Education the way a regular user would. If you want to use all the features of Stock Education, select “teacher” when creating an account. Once this is done, you are set up and ready to test out the virtual stock market.
 
 *****
 
