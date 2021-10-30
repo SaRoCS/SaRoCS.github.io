@@ -4,7 +4,7 @@ from django.db.models.deletion import CASCADE
 
 
 class User(AbstractUser):
-    cash = models.DecimalField(default=10000.00, decimal_places=2, max_digits=7)
+    cash = models.DecimalField(default=10000.00, decimal_places=2, max_digits=9)
     teacher = models.BooleanField(default=False)
     is_in_group = models.BooleanField(default=False)
      
@@ -36,6 +36,7 @@ class Group(models.Model):
     name = models.CharField(max_length=100, unique=True)
     class_id = models.CharField(max_length=7, unique=True)
     member = models.ManyToManyField(User, related_name="group")
+    cash = models.DecimalField(default=10000.00, decimal_places=2, max_digits=9) 
 
     def __str__(self):
         return f"{self.name}"

@@ -53,6 +53,7 @@ class GroupRegister(forms.Form):
         super(GroupRegister, self).__init__(*args, **kwargs)
         self.fields['name'] = forms.CharField(label='', max_length=100, widget=forms.TextInput(attrs={"class" : "form-control", "placeholder" : "Class Name", "autocomplete" : "off", "autofocus" : True}))
         self.fields['key'] = forms.CharField(label='', max_length=7, widget=forms.TextInput(attrs={"type" : 'hidden', "value" : key}))
+        self.fields['cash'] = forms.DecimalField(label='', max_digits=9, decimal_places=2, min_value=0.00, widget=forms.NumberInput(attrs={"class" : "form-control", "placeholder" : "Starting Cash", "autocomplete" : "off"}))
 
 class ChangePassword(forms.Form):
     new = forms.CharField(label='', widget=forms.PasswordInput(attrs={"class" : "form-control", "placeholder" : "New Password"}))
@@ -359,6 +360,7 @@ def groups(request):
             group.member.add(request.user)
             group.save()
             request.user.is_in_group = True
+            request.user.cash = group.cash
             request.user.save()
 
             return HttpResponseRedirect(reverse("groups"))
@@ -446,10 +448,11 @@ def group_register(request):
         if form.is_valid():
             name = form.cleaned_data['name']
             key = form.cleaned_data['key']
+            cash = form.cleaned_data['cash']
 
             #create the group
             try:
-                new = Group(name=name, class_id=key)
+                new = Group(name=name, class_id=key, cash=cash)
                 new.save()
             except IntegrityError:
                 return render(request, "stocks/g_register.html", {
@@ -462,6 +465,7 @@ def group_register(request):
             new.member.add(request.user)
             new.save()
             request.user.is_in_group = True
+            request.user.cash = cash
             request.user.save()
 
             return HttpResponseRedirect(reverse("groups"))
