@@ -27,6 +27,10 @@ IEX_KEY = os.environ.get("IEX_KEY")
 if not IEX_KEY:
     raise RuntimeError("IEX_KEY not set")
 
+FMP_KEY = os.environ.get("FMP_KEY")
+if not FMP_KEY:
+    raise RuntimeError("FMP_KEY not set")
+
 
 
 
@@ -44,13 +48,13 @@ class SellForm(forms.Form):
 class QuoteForm(forms.Form):
     symbol = forms.CharField(label='', max_length=50, widget=forms.TextInput(attrs={"class" : "form-control", "placeholder" :"Symbol or Name", "id" : "symbol", "list" : "options", 'autocomplete' : "off"}))
 
-class GroupLogin(forms.Form):
+class ClassLogin(forms.Form):
     key = forms.CharField(label='', max_length=7, widget=forms.TextInput(attrs={"class" : "form-control", "placeholder" :"Class Key", "autocomplete" : "off"}))
 
-class GroupRegister(forms.Form):
+class ClassRegister(forms.Form):
     def __init__(self, *args, **kwargs):
         key = kwargs.pop('key')
-        super(GroupRegister, self).__init__(*args, **kwargs)
+        super(ClassRegister, self).__init__(*args, **kwargs)
         self.fields['name'] = forms.CharField(label='', max_length=100, widget=forms.TextInput(attrs={"class" : "form-control", "placeholder" : "Class Name", "autocomplete" : "off", "autofocus" : True}))
         self.fields['key'] = forms.CharField(label='', max_length=7, widget=forms.TextInput(attrs={"type" : 'hidden', "value" : key}))
         self.fields['cash'] = forms.DecimalField(label='', max_digits=9, decimal_places=2, min_value=0.00, widget=forms.NumberInput(attrs={"class" : "form-control", "placeholder" : "Starting Cash", "autocomplete" : "off"}))
@@ -210,6 +214,7 @@ def buy(request):
     else:
         return render(request, "stocks/buy.html", {
             "form" : BuyForm(),
+            "key" : FMP_KEY
         })
 
 @login_required
@@ -336,47 +341,48 @@ def quote(request):
     else:
         return render(request, "stocks/quote.html", {
             "form" : QuoteForm(),
+            "key" : FMP_KEY
         })
 
 @login_required
-def groups(request):
-    #group login
+def classes(request):
+    #class login
     if request.method == "POST":
-        form = GroupLogin(request.POST)
+        form = ClassLogin(request.POST)
         if form.is_valid():
             key = form.cleaned_data['key']
-            group = Group.objects.filter(class_id=key)
+            cLass = Classroom.objects.filter(class_id=key)
 
-            #add the user to the group
+            #add the user to the class
             try:
-                group = group[0]
+                cLass = cLass[0]
             except IndexError:
-                return render(request, "stocks/groups_login.html", {
+                return render(request, "stocks/class_login.html", {
                 "form" : form,
                 "message" : "Invalid Class Key"
             })
 
             #update data
-            group.member.add(request.user)
-            group.save()
-            request.user.is_in_group = True
-            request.user.cash = group.cash
+            cLass.member.add(request.user)
+            cLass.save()
+            request.user.is_in_class = True
+            request.user.cash = cLass.cash
             request.user.save()
 
-            return HttpResponseRedirect(reverse("groups"))
+            return HttpResponseRedirect(reverse("class"))
         else:
-            return render(request, "stocks/groups_login.html", {
+            return render(request, "stocks/class_login.html", {
                 "form" : form
             })
     else:
-        #render group view
-        if request.user.is_in_group:
-            group = request.user.group.all()
-            group = group[0]
+        #render class view
+        if request.user.is_in_class:
+            cLass = request.user.classroom.all()
+            cLass = cLass[0]
             members = []
 
             #get the data for each member
-            for member in group.member.all():
+            for member in cLass.member.all():
                 stocks = member.stocks.all()
                 totals = float(member.cash)
                 for stock in stocks:
@@ -393,50 +399,50 @@ def groups(request):
             for member in members:
                 member['total'] = usd(member['total'])
 
-            return render(request, "stocks/group.html", {
-                "group" : group,
+            return render(request, "stocks/class.html", {
+                "class" : cLass,
                 "members" : members
             })
         else:
-            return render(request, "stocks/groups_login.html", {
-                "form" : GroupLogin()
+            return render(request, "stocks/class_login.html", {
+                "form" : ClassLogin()
             })
 
-#leave a group
+#leave a class
 @login_required
 def leave(request):
-    #which group
+    #which class
     try:
         name = request.GET['name']
         user = request.GET['user']
     except KeyError:
         return HttpResponse(status=404)
 
-    #leave the group
+    #leave the class
     user = User.objects.filter(username=user)[0]
-    group = Group.objects.filter(name=name)
-    group = group[0]
-    group.member.remove(user)
-    group.save()
-    user.is_in_group = False
+    cLass = Classroom.objects.filter(name=name)
+    cLass = cLass[0]
+    cLass.member.remove(user)
+    cLass.save()
+    user.is_in_class = False
     user.save()
 
-    #delete group if necessary
-    if group.member.all().exists() == False:
-        group.delete()
+    #delete class if necessary
+    if cLass.member.all().exists() == False:
+        cLass.delete()
     
-    return HttpResponseRedirect(reverse('groups'))
+    return HttpResponseRedirect(reverse('class'))
     
 
 @login_required
-def group_register(request):
+def class_register(request):
     #creaet unique key
     key = ''
     unique = False
     while unique == False:
         key = str(uuid.uuid4())
         key = key[0:7]
-        test = Group.objects.filter(class_id = key)
+        test = Classroom.objects.filter(class_id = key)
         try:
             test = test[0]
         except IndexError:
@@ -444,15 +450,15 @@ def group_register(request):
 
     #get and validate form data
     if request.method == "POST":
-        form = GroupRegister(request.POST, key=request.POST['key'])
+        form = ClassRegister(request.POST, key=request.POST['key'])
         if form.is_valid():
             name = form.cleaned_data['name']
             key = form.cleaned_data['key']
             cash = form.cleaned_data['cash']
 
-            #create the group
+            #create the class
             try:
-                new = Group(name=name, class_id=key, cash=cash)
+                new = Classroom(name=name, class_id=key, cash=cash)
                 new.save()
             except IntegrityError:
                 return render(request, "stocks/g_register.html", {
@@ -464,11 +470,11 @@ def group_register(request):
             #save data
             new.member.add(request.user)
             new.save()
-            request.user.is_in_group = True
+            request.user.is_in_class = True
             request.user.cash = cash
             request.user.save()
 
-            return HttpResponseRedirect(reverse("groups"))
+            return HttpResponseRedirect(reverse("class"))
         else:
             return render(request, "stocks/g_register.html", {
             "form" : form,
@@ -476,18 +482,18 @@ def group_register(request):
         })
     else:
         return render(request, "stocks/g_register.html", {
-            "form" : GroupRegister(key = key),
+            "form" : ClassRegister(key = key),
             "id" : key
         })
 
 @login_required
 def profile(request):
-    #group status
-    if request.user.is_in_group:
-        group = request.user.group.all()
-        group = group[0]
+    #class status
+    if request.user.is_in_class:
+        cLass = request.user.classroom.all()
+        cLass = cLass[0]
     else:
-        group = None
+        cLass = None
 
     #get and validate form data for changing password
     if request.method == "POST" and "change" in request.POST:
@@ -499,7 +505,7 @@ def profile(request):
             #make sure passwords match
             if new != confirm:
                 return render(request, "stocks/profile.html", {
-                    "group" : group,
+                    "class" : cLass,
                     "form1" : form,
                     "message" : "Passwords do not match"
                 })
@@ -511,7 +517,7 @@ def profile(request):
             return HttpResponseRedirect(reverse('login'))
         else:
             return render(request, "stocks/profile.html", {
-                "group" : group,
+                "class" : cLass,
                 "form1" : form,
                 "form2" : AddCash()
             })
@@ -528,13 +534,13 @@ def profile(request):
             return HttpResponseRedirect(reverse("index"))
         else:
             return render(request, "stocks/profile.html", {
-                "group" : group,
+                "class" : cLass,
                 "form1" : ChangePassword(),
                 "form2" : form
             })
     else:
         return render(request, "stocks/profile.html", {
-            "group" : group,
+            "class" : cLass,
             "form1" : ChangePassword(),
             "form2" : AddCash()
         })

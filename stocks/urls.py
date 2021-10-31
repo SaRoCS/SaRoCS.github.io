@@ -10,9 +10,9 @@ urlpatterns = [
     path('sell', views.sell, name='sell'),
     path('history', views.history, name='history'),
     path('quote', views.quote, name='quote'),
-    path("groups", views.groups, name='groups'),
+    path("class", views.classes, name='class'),
     path("leave", views.leave, name="leave"),
-    path("group_register", views.group_register, name='group_register'),
+    path("clas_register", views.class_register, name='class_register'),
     path("profile", views.profile, name='profile'),
     path("graph/<str:symbol>", views.graph, name='graph')
 ]

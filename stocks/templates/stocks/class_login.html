@@ -3,12 +3,12 @@
 
 {% block body %}
     <div id="t_reg">
-        Enter a class key to join a group<br>
+        Enter a class key to join a class<br>
         {% if message %}
             <b>{{ message }}</b>
         {% endif %}
     </div>
-    <form action="{% url 'groups' %}" method='post'>
+    <form action="{% url 'class' %}" method='post'>
         {% csrf_token %}
         {{ form }}<br>
         <input class="btn btn-primary" id="group_enter" value='Enter' type="submit">
@@ -16,7 +16,7 @@
     {% if request.user.teacher %}
         <div>
             or
-            <a href='{% url "group_register" %}'>Register for a new class</a>
+            <a href='{% url "class_register" %}'>Register for a new class</a>
         </div>
     {% endif %}
 {% endblock %}

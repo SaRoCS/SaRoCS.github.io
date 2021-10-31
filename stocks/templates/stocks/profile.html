@@ -4,15 +4,15 @@
 {% block body %}
     <div class='profile'>
         <b>Username:</b> {{ request.user.username }} <br>
-        {% if group == None %}
-           <b>Class name:</b> You are not in a group <br>
+        {% if class == None %}
+           <b>Class name:</b> You are not in a class <br>
            {% if request.user.teacher %}
-                <b>Class key:</b> You are not in a group <br>
+                <b>Class key:</b> You are not in a class <br>
             {% endif %}
         {% else %}
-            <b>Class name:</b> {{ group.name }} <br>
+            <b>Class name:</b> {{ class.name }} <br>
             {% if request.user.teacher %}
-                <b>Class key:</b> {{ group.class_id }} <br>
+                <b>Class key:</b> {{ class.class_id }} <br>
             {% endif %}
         {% endif %}
 
