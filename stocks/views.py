@@ -4,7 +4,6 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.http.response import JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
-from django import forms
 from django.contrib.auth.decorators import login_required
 import pandas as pd
 import plotly
@@ -14,6 +13,7 @@ from alpha_vantage.timeseries import TimeSeries
 import uuid
 import os
 
+from .forms import *
 from .models import *
 from .functions import *
 
@@ -30,42 +30,6 @@ if not IEX_KEY:
 FMP_KEY = os.environ.get("FMP_KEY")
 if not FMP_KEY:
     raise RuntimeError("FMP_KEY not set")
-
-
-
-
-class BuyForm(forms.Form):
-    symbol = forms.CharField(label='', max_length=50, widget=forms.TextInput(attrs={"class" : "form-control", "placeholder" :" Symbol or Name", "id" : "symbol", "list" : "options", 'autocomplete' : "off"}))
-    amount = forms.IntegerField(label='', min_value=1, widget=forms.NumberInput(attrs={"class" : "form-control", "placeholder" : "Amount"}))
-
-class SellForm(forms.Form):
-    def __init__(self, *args, **kwargs):
-        choices = kwargs.pop('choices')
-        super(SellForm, self).__init__(*args, **kwargs)
-        self.fields['symbol'] = forms.ChoiceField(label='', choices=choices, widget=forms.Select(attrs={'class' : "form-control", "placeholder" : "Symbol"}))
-        self.fields['amount'] = forms.IntegerField(label='', min_value=1, widget=forms.NumberInput(attrs={"class" : "form-control", "placeholder" : "Amount"}))
-    
-class QuoteForm(forms.Form):
-    symbol = forms.CharField(label='', max_length=50, widget=forms.TextInput(attrs={"class" : "form-control", "placeholder" :"Symbol or Name", "id" : "symbol", "list" : "options", 'autocomplete' : "off"}))
-
-class ClassLogin(forms.Form):
-    key = forms.CharField(label='', max_length=7, widget=forms.TextInput(attrs={"class" : "form-control", "placeholder" :"Class Key", "autocomplete" : "off"}))
-
-class ClassRegister(forms.Form):
-    def __init__(self, *args, **kwargs):
-        key = kwargs.pop('key')
-        super(ClassRegister, self).__init__(*args, **kwargs)
-        self.fields['name'] = forms.CharField(label='', max_length=100, widget=forms.TextInput(attrs={"class" : "form-control", "placeholder" : "Class Name", "autocomplete" : "off", "autofocus" : True}))
-        self.fields['key'] = forms.CharField(label='', max_length=7, widget=forms.TextInput(attrs={"type" : 'hidden', "value" : key}))
-        self.fields['cash'] = forms.DecimalField(label='', max_digits=9, decimal_places=2, min_value=0.00, widget=forms.NumberInput(attrs={"class" : "form-control", "placeholder" : "Starting Cash", "autocomplete" : "off"}))
-
-class ChangePassword(forms.Form):
-    new = forms.CharField(label='', widget=forms.PasswordInput(attrs={"class" : "form-control", "placeholder" : "New Password"}))
-    confirmation = forms.CharField(label='', widget=forms.PasswordInput(attrs={"class" : "form-control", "placeholder" : "Confirm Password"}))
-
-class AddCash(forms.Form):
-    choices = [(1000, "$1,000"), (2500, "$2,500"), (5000, "$5,000"), (10000, "$10,000"), (15000, "$15,000"), (20000, "$20,000")]
-    amount = forms.ChoiceField(label='', choices=choices, widget=forms.Select(attrs={'class' : "form-control", "placeholder" : "Amount"}))
 
 
 def index(request):
@@ -102,7 +66,8 @@ def index(request):
         return render(request, "stocks/index.html", {
             "s" : s,
             'cash' : cash,
-            "totals" : totals
+            "totals" : totals,
+            "user" : user
         })
     else:
         return HttpResponseRedirect(reverse("login"))
@@ -366,7 +331,7 @@ def classes(request):
             cLass.member.add(request.user)
             cLass.save()
             request.user.is_in_class = True
-            request.user.cash = cLass.cash
+            request.user.cash += cLass.cash
             request.user.save()
 
             return HttpResponseRedirect(reverse("class"))
@@ -425,6 +390,7 @@ def leave(request):
     cLass.member.remove(user)
     cLass.save()
     user.is_in_class = False
+    user.cash -= cLass.cash
     user.save()
 
     #delete class if necessary
@@ -454,7 +420,7 @@ def class_register(request):
         if form.is_valid():
             name = form.cleaned_data['name']
             key = form.cleaned_data['key']
-            cash = form.cleaned_data['cash']
+            cash = form.cleaned_data['cash'] - 10000
 
             #create the class
             try:
@@ -471,7 +437,7 @@ def class_register(request):
             new.member.add(request.user)
             new.save()
             request.user.is_in_class = True
-            request.user.cash = cash
+            request.user.cash += cash
             request.user.save()
 
             return HttpResponseRedirect(reverse("class"))

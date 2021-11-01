@@ -1,6 +1,7 @@
 {% extends 'stocks/layout.html' %}
 
 {% block body %}
+    <h4>{{ user.username }}'s Portfolio</h4>
     <table class="table table-striped">
         <thead>
             <tr>
@@ -25,7 +26,7 @@
             {% for stock in s %}
                 <tr>
                     <td>{{ stock.symbol }}</td>
-                    <td><a data-toggle="collapse" href="#collapseExample{{ stock.symbol }}" role="button" aria-expanded="false" aria-controls="collapseExample">
+                    <td><a data-bs-toggle="collapse" href="#collapseExample{{ stock.symbol }}" role="button" aria-expanded="false" aria-controls="collapseExample">
                         {{ stock.name }}
                       </a>
                     </td>

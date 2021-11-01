@@ -99,11 +99,6 @@ document.addEventListener("DOMContentLoaded", () => {
         
     }
 
-    //popovers
-    $(document).ready(function () {
-        $('[data-toggle="popover"]').popover();
-    });
-
     //news carousel
     const carousel = document.querySelector(".carousel-inner")
     //make api call
