@@ -1,5 +1,17 @@
 {% extends "stocks/layout.html" %}
 
+{% block script %}
+    <script>
+        window.onload = function() {
+            var a = document.getElementById("delete");
+            a.onclick = function() {
+                if(confirm("Do you want to delete your account?")) {
+                    window.location.href = "/delete"
+                }
+            }
+        }
+    </script>
+{% endblock %}
 
 {% block body %}
     <div class='profile'>
@@ -42,6 +54,9 @@
     {% endif %}
     <div class='profile'>
         <a href="{% url 'logout' %}">Logout</a>
+    </div>
+    <div class='profile'>
+        <a href="#" id="delete">Delete Account</a>
     </div>
 
 {% endblock %}

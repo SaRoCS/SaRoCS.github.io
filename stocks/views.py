@@ -7,6 +7,7 @@ from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 import pandas as pd
 import plotly
+from urllib.error import HTTPError
 import json
 import plotly.express as px
 from alpha_vantage.timeseries import TimeSeries
@@ -169,6 +170,7 @@ def buy(request):
             else:
                 return render(request, "stocks/buy.html", {
                 "form" : buy,
+                "msg" : "You do not have enough money"
             })
 
             return HttpResponseRedirect(reverse('index'))
@@ -217,7 +219,8 @@ def sell(request):
                 return HttpResponseRedirect(reverse('index'))
             else:
                 return render(request, "stocks/sell.html", {
-                    "form" : SellForm(choices=choices)
+                    "form" : SellForm(choices=choices),
+                    "msg" : "You do not own this many shares"
                 })
         else:
             return render(request, "stocks/sell.html", {
@@ -258,7 +261,12 @@ def quote(request):
 
             try:
                 #get day stats
-                df = pd.read_json(f"https://cloud.iexapis.com/stable/stock/{symbol}/batch?types=intraday-prices&token={IEX_KEY}")
+                try:
+                    df = pd.read_json(f"https://cloud.iexapis.com/stable/stock/{symbol}/batch?types=intraday-prices&token={IEX_KEY}")
+                except HTTPError:
+                    return render(request, "stocks/quote.html", {
+                    "msg" : "Invalid symbol."
+                }) 
                 df = df['intraday-prices']
 
                 high = 0.00
@@ -547,3 +555,8 @@ def graph(request, symbol):
     fig['data'][0]['line']['color']= "lightgray"
     
     return JsonResponse(plotly.io.to_html(fig, include_plotlyjs = False, full_html=False), safe=False)
+
+@login_required
+def delete(request):
+    request.user.delete()
+    return HttpResponseRedirect(reverse('index'))

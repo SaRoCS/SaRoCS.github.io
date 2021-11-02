@@ -7,16 +7,20 @@
 {% endblock %}
 
 {% block body %}
-    <h3>{{ msg }}</h3>
-    <div class='form'>
-        <form action='{% url "buy" %}' method="POST">
-            {% csrf_token %}
-            {% for field in form %}
-                {{field}}<br>
-            {% endfor %}
-            <datalist id='options'></datalist>
-            <input type="submit" class='btn btn-primary' value='Buy'>
-        </form>
-    </div>
+    <h3 class="msg">{{ msg }}</h3>
+    {% if  not msg %}
+        <div class='form'>
+            <form action='{% url "buy" %}' method="POST">
+                {% csrf_token %}
+                {% for field in form %}
+                    {{field}}<br>
+                {% endfor %}
+                <datalist id='options'></datalist>
+                <input type="submit" class='btn btn-primary' value='Buy'>
+            </form>
+        </div>
+    {% else %}
+        <a role="button" href="{% url 'buy' %}" class="btn btn-primary">Go Back</a>
+    {% endif %}
     <div id='api-key' hidden>{{ key }}</div>
 {% endblock %}

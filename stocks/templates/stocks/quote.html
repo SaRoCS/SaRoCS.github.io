@@ -3,17 +3,20 @@
 
 
 {% block script %}
-    <script src="{% static 'stocks/live.js' %}"></script>
-    
+    <script src="{% static 'stocks/live.js' %}"></script>    
 {% endblock %}
 
 {% block body %}
-    <h3>{{ msg }}</h3>
-    <form action='/quote' method="POST">
-        {% csrf_token %}
-        {{form}}<br>
-        <datalist id='options'></datalist>
-        <input type="submit" class='btn btn-primary'>
-    </form>
+    <h3 class="msg">{{ msg }}</h3>
+    {% if  not msg %}
+        <form action='/quote' method="POST">
+            {% csrf_token %}
+            {{form}}<br>
+            <datalist id='options'></datalist>
+            <input type="submit" class='btn btn-primary'>
+        </form>
+    {% else %}
+        <a role="button" href="{% url 'quote' %}" class="btn btn-primary">Go Back</a>
+    {% endif %}
     <div id='api-key' hidden>{{ key }}</div>
 {% endblock %}

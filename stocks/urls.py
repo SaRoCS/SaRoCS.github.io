@@ -14,5 +14,6 @@ urlpatterns = [
     path("leave", views.leave, name="leave"),
     path("clas_register", views.class_register, name='class_register'),
     path("profile", views.profile, name='profile'),
-    path("graph/<str:symbol>", views.graph, name='graph')
+    path("graph/<str:symbol>", views.graph, name='graph'),
+    path("delete", views.delete, name="delete")
 ]
