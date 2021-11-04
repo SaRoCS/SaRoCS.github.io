@@ -37,7 +37,7 @@
                 </tr>
                 <div class="collapse" id="collapseExample{{ stock.symbol }}">
                     <div class="card card-body">
-                        <h4>{{ stock.exchange }}</h4>
+                        <h4>{{ stock.symbol}}: {{ stock.exchange }}</h4>
                         {% if stock.point > 0 %}
                             <p class='green large'><b>{{ stock.point }}%</b></span></p>
                         {% else %}

@@ -11,8 +11,8 @@
     {% if  not msg %}
         <form action='/quote' method="POST">
             {% csrf_token %}
-            {{form}}<br>
-            <datalist id='options'></datalist>
+            {{form}}
+            <datalist id='options'></datalist><br>
             <input type="submit" class='btn btn-primary'>
         </form>
     {% else %}
