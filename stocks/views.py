@@ -280,13 +280,13 @@ def quote(request):
 
                 for i in range(len(df)):
                     #high
-                    if high != None:
-                        if df[i]['high'] != None:
+                    if high is not None:
+                        if df[i]['high'] is not None:
                             if df[i]['high'] > high:
                                 high = df[i]['high']
                     #low
-                    if low != None:
-                        if df[i]['low'] != None:
+                    if low is not None:
+                        if df[i]['low'] is not None:
                             if df[i]['low'] < low:
                                 low = df[i]['low']
 
@@ -295,7 +295,7 @@ def quote(request):
                 price = usd(price)
 
                 #news
-                response = requests.get(f"https://cloud.iexapis.com/stable/stock/{symbol}/news/last/10?token={IEX_KEY}")
+                #response = requests.get(f"https://cloud.iexapis.com/stable/stock/{symbol}/news/last/10?token={IEX_KEY}")
                 
                 return render(request, "stocks/quoted.html", {
                     "high" : high, 
@@ -305,7 +305,7 @@ def quote(request):
                     "date" : date,
                     "quote" : quoteV,
                     "price" : price,
-                    "news" : json.dumps(response.json())
+                    #"news" : json.dumps(response.json())
                 })
             except KeyError:
                 return render(request, "stocks/quote.html", {
@@ -524,14 +524,17 @@ def graph(request, symbol):
     #get time series
     quote = lookup(symbol)
     ts = TimeSeries(ALPHA_KEY)
-    data, meta = ts.get_daily_adjusted(symbol=symbol, outputsize="full")
+    #_adjusted
+    data, meta = ts.get_weekly_adjusted(symbol=symbol) #outputsize="full"
     keys = data.keys()
     times = []
     for key in keys:
         times.append(key)
     closes = []
+    print(data)
     for i in range(len(times)):
-        closes.append(float(data[times[i]]['5. adjusted close']))
+        #5. adjusted close
+        closes.append(float(data[times[i]]['5. adjusted close']))#4. close
         #can cast to float if not working
     print(closes[0:3])
     #create the graph
