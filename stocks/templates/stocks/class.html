@@ -21,6 +21,14 @@
 
 {% block body %}
     <h2 id='g_title'>{{ class.name }}</h2>
+    {% for score in scores %}
+        {% if score.score < 0 %}
+            <h4>{{ score.team }} : <span style="color : red">{{ score.score }}%</span></h4>
+        {% else %}
+            <h4>{{ score.team }} : <span style="color : green">{{ score.score }}%</span></h4>
+        {% endif %}
+
+    {% endfor %}
     <table class="table table-striped">
         <thead>
             <tr>
@@ -30,25 +38,44 @@
                     <th>History</th>
                     <th>Remove</th>
                 {% endif %}
+                <th>Team</th>
             </tr>
         </thead>
         <tbody>
             {% for member in members %}
                 <tr>
                     {% if request.user.teacher %}
-                        <td><a href="/?user={{ member.name }}">{{ member.name }}</a></td>
+                        <td><a href="/?user={{ member.user.username }}" style="color : {{member.user.team.all.0.color}}">{{ member.user.username }}</a></td>
                     {% else %}
-                        <td>{{ member.name }}</td>
+                        <td style="color : {{member.user.team.all.0.color}}">{{ member.user.username }}</td>
                     {% endif %}
                     <td>{{ member.total }}</td>
                     {% if request.user.teacher %}
-                        <td><a href='/history?user={{ member.name }}'>History</a> </td>
-                        <td><a href='/leave?name={{ class.name }}&user={{ member.name }}'>Remove</a> </td>
+                        <td><a href='/history?user={{ member.user.username }}'>History</a> </td>
+                        <td><a href='/leave?name={{ class.name }}&user={{ member.user.username }}'>Remove</a> </td>
+                        <!--td><form action="/team" method="POST" id="{{ member.name }}">{% csrf_token %}{{join}}</form></td-->
                     {% endif %}
+                    <td>{{ member.user.team.all.0.name }}</td>
                 </tr>
             {% endfor %}
         </tbody>
     </table>
+    <h4>Teams</h4>
+    {% if not request.user.team.all.0 %}
+        <form action="/team" method="POST" id="join">
+            {% csrf_token %}
+            {{ join_form }}
+        </form>
+    {% endif %}
+    {% if request.user.teacher %}
+        <h4>Create a Team</h4>
+        <form action="/team" method="POST">
+            {% csrf_token %}
+            {{form}}
+            <input type="submit" class='btn btn-primary'>
+        </form>
+    {% endif %}
     <div id='name' hidden=true>{{ request.user.username }}</div>
+    <hr>
     <button class="btn btn-primary" id='leave'>Leave</button>
 {% endblock %}

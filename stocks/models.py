@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.db.models.deletion import CASCADE
+from colorfield.fields import ColorField
 
 
 class User(AbstractUser):
@@ -36,9 +37,18 @@ class Classroom(models.Model):
     name = models.CharField(max_length=100, unique=True)
     class_id = models.CharField(max_length=7, unique=True)
     member = models.ManyToManyField(User, related_name="classroom")
-    cash = models.DecimalField(default=10000.00, decimal_places=2, max_digits=9) 
+    cash = models.DecimalField(default=10000.00, decimal_places=2, max_digits=9)
 
     def __str__(self):
         return f"{self.name}"
 
+
+class Team(models.Model):
+    name = models.CharField(max_length=100, unique=False)
+    member = models.ManyToManyField(User, related_name="team")
+    classroom = models.ForeignKey(Classroom, on_delete=CASCADE, related_name="teams")
+    color = ColorField(default="#0000EE")
+
+    def __str__(self):
+        return f"{self.name}"
 

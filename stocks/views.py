@@ -1,6 +1,6 @@
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.http.response import JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
@@ -362,11 +362,36 @@ def classes(request):
                     x = lookup(stock.symbol)
                     i = stock.amount * x['price']
                     totals += i
-                temp = {"name" : member.username, "total" : totals}
+                temp = {"user" : member, "total" : totals}
                 members.append(temp)
 
             #sort by totals
             members = sorted(members, key = lambda i: i['total'], reverse=True)
+
+            #get team names
+            teams = list(request.user.classroom.all()[0].teams.all())
+
+            join = [("None", "None")]
+            score = []
+            for team in teams:
+                #team choices
+                temp = (team.name, team.name)
+                join.append(temp)
+
+                #team score
+                users = team.member.all()
+                total = 0
+                mems = 0
+                for user in users:
+                    for member in members:
+                        if member['user'] == user:
+                            total += member['total']
+                            mems += 1
+                total /= mems
+                total -= float(team.classroom.cash)
+                total = round(total / float(team.classroom.cash) * 100, 2)
+                score.append({"team" : team.name, "score" : total})
+
 
             #usd the totals
             for member in members:
@@ -374,7 +399,10 @@ def classes(request):
 
             return render(request, "stocks/class.html", {
                 "class" : cLass,
-                "members" : members
+                "members" : members,
+                "form" : TeamForm(),
+                "join_form" : JoinTeam(teams = join),
+                'scores' : score
             })
         else:
             return render(request, "stocks/class_login.html", {
@@ -531,7 +559,6 @@ def graph(request, symbol):
     for key in keys:
         times.append(key)
     closes = []
-    print(data)
     for i in range(len(times)):
         #5. adjusted close
         closes.append(float(data[times[i]]['5. adjusted close']))#4. close
@@ -563,3 +590,43 @@ def graph(request, symbol):
 def delete(request):
     request.user.delete()
     return HttpResponseRedirect(reverse('index'))
+
+@login_required
+def team(request):
+    if request.method == "POST" and "color" in request.POST:
+        form = TeamForm(request.POST)
+        if form.is_valid():
+            name = form.cleaned_data['name']
+            color = form.cleaned_data['color']
+            new = Team(name=name, color=color, classroom = request.user.classroom.all()[0])
+            new.save()
+            new.member.add(request.user)
+            new.save()
+            return HttpResponseRedirect(reverse("class"))
+        else:
+            pass
+    elif request.method == "POST" and "team" in request.POST:
+        #get team names
+        teams = list(request.user.classroom.all()[0].teams.all())
+        join = [("None", "None")]
+        for team in teams:
+            temp = (team.name, team.name)
+            join.append(temp)
+        
+        #form
+        form = JoinTeam(request.POST, teams = join)
+        if form.is_valid():
+            team_join = form.cleaned_data['team']
+            if team_join != "None":
+                classroom = request.user.classroom.all()[0]
+                team = Team.objects.filter(name = team_join, classroom = classroom)[0]
+                team.member.add(request.user)
+                team.save()
+            else:
+                team = request.user.team.all()[0]
+                team.member.remove(request.user)
+            return HttpResponseRedirect(reverse("class"))
+        else:
+            pass
+    else:
+        raise Http404

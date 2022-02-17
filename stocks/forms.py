@@ -1,4 +1,5 @@
 from django import forms
+from colorfield.fields import ColorField
 
 class BuyForm(forms.Form):
     symbol = forms.CharField(label='', max_length=50, widget=forms.TextInput(attrs={"class" : "form-control", "placeholder" :" Symbol or Name", "id" : "symbol", "list" : "options", 'autocomplete' : "off"}))
@@ -32,3 +33,14 @@ class ChangePassword(forms.Form):
 class AddCash(forms.Form):
     choices = [(1000, "$1,000"), (2500, "$2,500"), (5000, "$5,000"), (10000, "$10,000"), (15000, "$15,000"), (20000, "$20,000")]
     amount = forms.ChoiceField(label='', choices=choices, widget=forms.Select(attrs={'class' : "form-control", "placeholder" : "Amount"}))
+
+
+class TeamForm(forms.Form):
+    name = forms.CharField(label='', max_length=100, widget=forms.TextInput(attrs={"class" : "form-control", "placeholder" : "Team Name", "autocomplete" : "off", "autofocus" : True}))
+    color = forms.CharField(label='Team color', widget=forms.TextInput(attrs={"class" : "form-control", "type" : "color"}))
+
+class JoinTeam(forms.Form):
+    def __init__(self, *args, **kwargs):
+        choices = kwargs.pop('teams')
+        super(JoinTeam, self).__init__(*args, **kwargs)
+        self.fields['team'] = forms.ChoiceField(label='Choose a team', choices=choices, widget=forms.Select(attrs={'class' : "form-control", "placeholder" : "Team", "form" : "join", "onchange" : "this.form.submit()"}))
