@@ -16,6 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         fetch(`https://financialmodelingprep.com/api/v3/search?query=${symbol}&exchange=NYSE&limit=5&apikey=${key}`),
                         fetch(`https://financialmodelingprep.com/api/v3/search?query=${symbol}&exchange=NASDAQ&limit=5&apikey=${key}`)
                     ])
+                    .catch(console.error)
                     .then(responses => {
                         return Promise.all(responses.map(function (response) {
                             return response.json();
