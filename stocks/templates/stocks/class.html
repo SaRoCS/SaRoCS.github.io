@@ -61,12 +61,10 @@
         </tbody>
     </table>
     <h4>Teams</h4>
-    {% if not request.user.team.all.0 %}
-        <form action="/team" method="POST" id="join">
-            {% csrf_token %}
-            {{ join_form }}
-        </form>
-    {% endif %}
+    <form action="/team" method="POST" id="join">
+        {% csrf_token %}
+        {{ join_form }}
+    </form>
     {% if request.user.teacher %}
         <h4>Create a Team</h4>
         <form action="/team" method="POST">

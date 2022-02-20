@@ -1,3 +1,4 @@
+from decimal import DivisionByZero
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
 from django.http import Http404, HttpResponse, HttpResponseRedirect
@@ -387,7 +388,11 @@ def classes(request):
                         if member['user'] == user:
                             total += member['total']
                             mems += 1
-                total /= mems
+                try:
+                    total /= mems
+                except DivisionByZero:
+                    team.delete()
+                    break
                 total -= float(team.classroom.cash)
                 total = round(total / float(team.classroom.cash) * 100, 2)
                 score.append({"team" : team.name, "score" : total})

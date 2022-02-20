@@ -3,3 +3,4 @@ pandas
 plotly
 alpha_vantage
 django-restricted-paths
+django-colorfield
