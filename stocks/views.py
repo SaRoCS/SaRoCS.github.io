@@ -340,7 +340,7 @@ def classes(request):
             cLass.member.add(request.user)
             cLass.save()
             request.user.is_in_class = True
-            request.user.cash += cLass.cash
+            request.user.cash = cLass.cash
             request.user.save()
 
             return HttpResponseRedirect(reverse("class"))
@@ -383,19 +383,18 @@ def classes(request):
                 users = team.member.all()
                 total = 0
                 mems = 0
-                for user in users:
-                    for member in members:
-                        if member['user'] == user:
-                            total += member['total']
-                            mems += 1
-                try:
-                    total /= mems
-                except DivisionByZero:
+                for member in members:
+                    if member['user'] in team:
+                        total += member['total']
+                        mems += 1
+
+                if mems == 0:
                     team.delete()
-                    break
-                total -= float(team.classroom.cash)
-                total = round(total / float(team.classroom.cash) * 100, 2)
-                score.append({"team" : team.name, "score" : total})
+                    
+                starting_cash = float(team.classroom.cash) * mems
+                change = (total - starting_cash) / starting_cash
+                change = round(change * 100, 2)
+                score.append({"team" : team.name, "score" : change})
 
 
             #usd the totals
