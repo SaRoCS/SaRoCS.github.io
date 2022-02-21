@@ -44,7 +44,7 @@ def index(request):
         except KeyError:
             user = request.user
 
-        #get data 
+        #get data
         stocks = user.stocks.all()
         cash = usd(user.cash)
         totals = float(user.cash)
@@ -193,7 +193,7 @@ def sell(request):
     for stock in stocks:
         s = (stock.symbol, stock.symbol)
         choices.append(s)
-    
+
     #get and validate form data
     if request.method == "POST":
         form = SellForm(request.POST, choices=choices)
@@ -243,7 +243,7 @@ def history(request):
 
     #get all transactions for the user
     stocks = Transaction.objects.filter(buyer=user).order_by("-date")
-    
+
     return render(request, "stocks/history.html", {
         "stocks" : stocks,
     })
@@ -267,7 +267,7 @@ def quote(request):
                 except HTTPError:
                     return render(request, "stocks/quote.html", {
                     "msg" : "Invalid symbol."
-                }) 
+                })
                 df = df['intraday-prices']
 
                 high = 0.00
@@ -297,12 +297,12 @@ def quote(request):
 
                 #news
                 #response = requests.get(f"https://cloud.iexapis.com/stable/stock/{symbol}/news/last/10?token={IEX_KEY}")
-                
+
                 return render(request, "stocks/quoted.html", {
-                    "high" : high, 
-                    "low" : low, 
-                    "openS" : openS, 
-                    "close" : close, 
+                    "high" : high,
+                    "low" : low,
+                    "openS" : openS,
+                    "close" : close,
                     "date" : date,
                     "quote" : quoteV,
                     "price" : price,
@@ -436,9 +436,9 @@ def leave(request):
     #delete class if necessary
     if cLass.member.all().exists() == False:
         cLass.delete()
-    
+
     return HttpResponseRedirect(reverse('class'))
-    
+
 
 @login_required
 def class_register(request):
@@ -515,11 +515,11 @@ def profile(request):
                     "form1" : form,
                     "message" : "Passwords do not match"
                 })
-            
+
             #update password
             request.user.set_password(new)
             request.user.save()
-            
+
             return HttpResponseRedirect(reverse('login'))
         else:
             return render(request, "stocks/profile.html", {
@@ -587,7 +587,7 @@ def graph(request, symbol):
         )
     )
     fig['data'][0]['line']['color']= "lightgray"
-    
+
     return JsonResponse(plotly.io.to_html(fig, include_plotlyjs = False, full_html=False), safe=False)
 
 @login_required
