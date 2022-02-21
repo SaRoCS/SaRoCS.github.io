@@ -355,12 +355,21 @@ def classes(request):
             cLass = cLass[0]
             members = []
 
+            #get all symbols in the class
+            symbols = []
+            for member in cLass.member.all():
+                stocks = member.stocks.all()
+                for stock in stocks:
+                    if stock.symbol not in symbols:
+                        symbols.append(stock.symbol)
+            
             #get the data for each member
+            quotes = batchLookup(symbols)
             for member in cLass.member.all():
                 stocks = member.stocks.all()
                 totals = float(member.cash)
                 for stock in stocks:
-                    x = lookup(stock.symbol)
+                    x = quotes[stock.symbol]
                     i = stock.amount * x['price']
                     totals += i
                 temp = {"user" : member, "total" : totals}
@@ -383,7 +392,7 @@ def classes(request):
                 total = 0
                 mems = 0
                 for member in members:
-                    if member['user'] in team:
+                    if member['user'] in team.member.all():
                         total += member['total']
                         mems += 1
 

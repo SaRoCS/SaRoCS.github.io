@@ -67,6 +67,33 @@ def advancedLookup(symbol):
     except (KeyError, TypeError, ValueError):
         return None
 
+def batchLookup(symbols):
+    symbols = f"{*symbols,}"
+    symbols = symbols[1:-1]
+    #contact API
+    try:
+        response = requests.get(f"https://cloud.iexapis.com/stable/stock/market/batch?symbols={urllib.parse.quote_plus(symbols)}&types=quote&token={IEX_KEY}")
+        response.raise_for_status()
+    except requests.RequestException:
+        return None
+
+    #parse response
+    try:
+        res = response.json()
+        quote = {}
+        for symbol in res:
+            sym = res[symbol]['quote']
+            quote[symbol] = {
+                "name": sym["companyName"],
+                "price": float(sym["latestPrice"]),
+                "symbol": sym["symbol"],
+                "prevClose" : float(sym["previousClose"]),
+                'exchange' : sym['primaryExchange']
+            }
+        return quote
+    except (KeyError, TypeError, ValueError):
+        return None
+
 def usd(value):
     return f"${value:,.2f}"
 
