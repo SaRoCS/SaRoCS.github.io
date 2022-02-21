@@ -141,7 +141,7 @@ def buy(request):
         buy = BuyForm(request.POST)
         if buy.is_valid():
             stock = buy.cleaned_data['symbol']
-            stock = stock.split(": ")[0]
+            stock = stock.split(": ")[0].upper()
             amount = buy.cleaned_data['amount']
             data = lookup(stock)
 
@@ -369,7 +369,7 @@ def classes(request):
                 stocks = member.stocks.all()
                 totals = float(member.cash)
                 for stock in stocks:
-                    x = quotes[stock.symbol]
+                    x = quotes[stock.symbol.upper()]
                     i = stock.amount * x['price']
                     totals += i
                 temp = {"user" : member, "total" : totals}

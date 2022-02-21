@@ -1,3 +1,4 @@
+import math
 import os
 import requests
 import urllib.parse
@@ -68,31 +69,47 @@ def advancedLookup(symbol):
         return None
 
 def batchLookup(symbols):
-    symbols = f"{*symbols,}"
-    symbols = symbols[1:-1]
-    #contact API
-    try:
-        response = requests.get(f"https://cloud.iexapis.com/stable/stock/market/batch?symbols={urllib.parse.quote_plus(symbols)}&types=quote&token={IEX_KEY}")
-        response.raise_for_status()
-    except requests.RequestException:
-        return None
+    #requests limited to 100 symbols get how many requests you need
+    x = math.ceil(len(symbols) / 100)
 
-    #parse response
-    try:
-        res = response.json()
-        quote = {}
-        for symbol in res:
-            sym = res[symbol]['quote']
-            quote[symbol] = {
-                "name": sym["companyName"],
-                "price": float(sym["latestPrice"]),
-                "symbol": sym["symbol"],
-                "prevClose" : float(sym["previousClose"]),
-                'exchange' : sym['primaryExchange']
-            }
-        return quote
-    except (KeyError, TypeError, ValueError):
-        return None
+    #split the list into groups of 100
+    reqs = {}
+    for i in range(x):
+        if i == 0:
+            sym = symbols[0:100]
+        elif i == x - 1:
+            sym = symbols[i*100:len(symbols)]
+        else:
+            sym = symbols[i*100:(i+1)*100]
+        #format it into a string for api call
+        sym = f"{*sym,}"
+        reqs[i] = sym[1:-1]
+
+    #make the calls
+    quote = {}
+    for req in reqs:
+        #contact API
+        try:
+            response = requests.get(f"https://cloud.iexapis.com/stable/stock/market/batch?symbols={urllib.parse.quote_plus(req)}&types=quote&token={IEX_KEY}")
+            response.raise_for_status()
+        except requests.RequestException:
+            return None
+
+        #parse response
+        try:
+            res = response.json()
+            for symbol in res:
+                sym = res[symbol]['quote']
+                quote[symbol] = {
+                    "name": sym["companyName"],
+                    "price": float(sym["latestPrice"]),
+                    "symbol": sym["symbol"],
+                    "prevClose" : float(sym["previousClose"]),
+                    'exchange' : sym['primaryExchange']
+                }
+        except (KeyError, TypeError, ValueError):
+            return None
+    return quote
 
 def usd(value):
     return f"${value:,.2f}"
