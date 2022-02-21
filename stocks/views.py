@@ -380,7 +380,6 @@ def classes(request):
                 join.append(temp)
 
                 #team score
-                users = team.member.all()
                 total = 0
                 mems = 0
                 for member in members:
