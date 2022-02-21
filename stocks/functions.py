@@ -90,7 +90,7 @@ def batchLookup(symbols):
     for req in reqs:
         #contact API
         try:
-            response = requests.get(f"https://cloud.iexapis.com/stable/stock/market/batch?symbols={urllib.parse.quote_plus(req)}&types=quote&token={IEX_KEY}")
+            response = requests.get(f"https://cloud.iexapis.com/stable/stock/market/batch?symbols={urllib.parse.quote_plus(reqs[req])}&types=quote&token={IEX_KEY}")
             response.raise_for_status()
         except requests.RequestException:
             return None
