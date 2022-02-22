@@ -44,13 +44,21 @@ def index(request):
         except KeyError:
             user = request.user
 
-        #get data
+        #get all symbols in the class
+        symbols = []
         stocks = user.stocks.all()
+        for stock in stocks:
+            if stock.symbol not in symbols:
+                symbols.append(stock.symbol)
+
+        quotes = batchLookup(symbols)
+
+        #get data
         cash = usd(user.cash)
         totals = float(user.cash)
         s = []
         for stock in stocks:
-            x = lookup(stock.symbol)
+            x = quotes[stock.symbol.upper()]
             x['amount'] = stock.amount
             i = stock.amount * x['price']
             totals += i
