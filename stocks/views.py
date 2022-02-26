@@ -1,3 +1,4 @@
+import copy
 from decimal import DivisionByZero
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
@@ -58,10 +59,10 @@ def index(request):
         totals = float(user.cash)
         s = []
         for stock in stocks:
-            x = quotes[stock.symbol.upper()]
+            x = copy.deepcopy(quotes[stock.symbol.upper()])
             x['amount'] = stock.amount
             i = stock.amount * x['price']
-            totals += i
+            totals += float(i)
             x['total'] = usd(i)
             point = (x['price'] - x['prevClose']) / x['prevClose']
             point = point * 100
