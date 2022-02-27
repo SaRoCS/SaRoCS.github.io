@@ -112,7 +112,11 @@ def batchLookup(symbols):
     return quote
 
 def usd(value):
-    return f"${value:,.2f}"
+    if value >= 0:
+        return f"${value:,.2f}"
+    else:
+        value = abs(value)
+        return f"-${value:,.2f}"
 
 def shorten(value):
     y = (len(str(value))-1)

@@ -8,19 +8,21 @@
                 <th>Symbol</th>
                 <th>Name</th>
                 <th>Shares</th>
-                <th>Price</th>
+                <th>Current Price</th>
+                <th>Last Purchase</th>
+                <th>Profit</th>
                 <th>TOTAL</th>
             </tr>
         </thead>
         <tfoot>
             <tr>
-                <td colspan="4"></td>
+                <td colspan="6"></td>
                 <td>{{ totals }}</td>
             </tr>
         </tfoot>
         <tbody>
             <tr>
-                <td colspan="4">CASH</td>
+                <td colspan="6">CASH</td>
                 <td>{{ cash }}</td>
             </tr>
             {% for stock in s %}
@@ -32,6 +34,8 @@
                     </td>
                     <td>{{ stock.amount }}</td>
                     <td>{{ stock.price }}</td>
+                    <td>{{ stock.last_price }}</td>
+                    <td>{{ stock.profit }}</td>
                     <td>{{ stock.total }}</td>
                     
                 </tr>

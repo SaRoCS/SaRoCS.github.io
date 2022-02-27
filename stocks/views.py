@@ -67,8 +67,21 @@ def index(request):
             point = (x['price'] - x['prevClose']) / x['prevClose']
             point = point * 100
             point = round(point, 2)
-            x['price'] = usd(x['price'])
             x['point'] = point
+
+            #get buy prices
+            transactions = Transaction.objects.filter(buyer = user, symbol__iexact = stock.symbol, amount__gt = 0).order_by("-date")
+            x['last_price'] = usd(transactions[0].price)
+
+            #weighted average of all purchase prices
+            buy_price = 0.00
+            amount = 0
+            for transaction in transactions:
+                buy_price += transaction.amount * float(transaction.price)
+                amount += transaction.amount
+            profit = (x['price'] - (buy_price / amount)) * stock.amount
+            x['profit'] = usd(profit)
+            x['price'] = usd(x['price'])
             s.append(x)
 
         totals = usd(totals)
