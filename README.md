@@ -1,5 +1,8 @@
 # Stock Education
 
+Note: Many of the APIs this program relies on have moved behind paywalls.
+*****
+
 Stock Education is a virtual stock market designed to help educate students on how the stock market works. Students can learn how basic buying and selling of stock shares work and how to understand the various statistics about a company’s stock.  Students can be easily organized into classrooms, where the teacher can view each student’s portfolio and history.  Each student has the ability to buy and sell stocks, view stock quotes and news, see their own purchase history, and join groups.  As a teacher or individual, the ability to create and manage groups
 
 *****
